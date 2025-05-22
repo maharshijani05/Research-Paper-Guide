@@ -108,21 +108,45 @@ def chatbot_app():
 
     session_id = st.session_state.get("session_id", "default_session")
 
-    uploaded_file = st.file_uploader("Upload your research paper PDF", type=["pdf"], key="chatbot_uploader")
-    if uploaded_file:
-        # Extract text & build vectorstore
-        with st.spinner("Processing PDF..."):
-            paper_text = extract_text_from_pdf(uploaded_file)
-            vectorstore = build_vectorstore_from_text(paper_text)
-            set_vectorstore(session_id, vectorstore)
-        st.success("PDF processed and vectorstore created! You can now ask questions.")
+    # Initialize session variables
+    if "messages" not in st.session_state:
+        st.session_state["messages"] = []
+    if "vectorstore_created" not in st.session_state:
+        st.session_state["vectorstore_created"] = False
 
+    # File upload - only show if vectorstore not created
+    if not st.session_state["vectorstore_created"]:
+        uploaded_file = st.file_uploader("📄 Upload your research paper PDF", type=["pdf"], key="chatbot_uploader")
+        if uploaded_file:
+            with st.spinner("Processing PDF..."):
+                paper_text = extract_text_from_pdf(uploaded_file)
+                vectorstore = build_vectorstore_from_text(paper_text)
+                set_vectorstore(session_id, vectorstore)
+                st.session_state["vectorstore_created"] = True
+            st.success("✅ PDF processed! You can now ask questions.")
+
+    # Check if vectorstore is ready
     if get_vectorstore(session_id) is None:
-        st.info("Please upload a PDF to start chatting.")
+        st.info("⬆️ Please upload a PDF to start.")
         return
 
-    user_question = st.text_input("Ask a question about the paper:")
-    if user_question:
-        answer = run_paper_chatbot(user_question, session_id)
-        st.markdown("### 🤖 Answer:")
-        st.write(answer)
+    # Display previous chat messages
+    for msg in st.session_state["messages"]:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+    # Show chat input at bottom
+    user_input = st.chat_input("Ask something about the paper...")
+    if user_input:
+        # Save and display user input
+        st.session_state.messages.append({"role": "user", "content": user_input})
+        st.chat_message("user").markdown(user_input)
+
+        # Get response from chatbot
+        answer = run_paper_chatbot(user_input, session_id)
+
+        # Save and display assistant response
+        st.session_state.messages.append({"role": "assistant", "content": answer})
+        st.chat_message("assistant").markdown(answer)
+
+

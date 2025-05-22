@@ -1,8 +1,10 @@
 from PyPDF2 import PdfReader
 from transformers import pipeline
-from langchain.llms import HuggingFacePipeline
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+# from langchain.llms import HuggingFacePipeline
+# from langchain.prompts import PromptTemplate
+# from langchain.chains import LLMChain
+from langchain_huggingface import HuggingFacePipeline
+from langchain import PromptTemplate
 
 def extract_text_from_pdf(file):
     reader = PdfReader(file)
@@ -11,7 +13,7 @@ def extract_text_from_pdf(file):
         text += page.extract_text() or ""
     return text
 
-summarizer_pipeline = pipeline("text2text-generation", model="google/flan-t5-base", max_length=1024,truncation=True,early_stopping=True,no_repeat_ngram_size=3)
+summarizer_pipeline = pipeline("text2text-generation", model="google/flan-t5-base", max_length=1024,num_beams=4,truncation=True,early_stopping=True,no_repeat_ngram_size=3)
 
 llm = HuggingFacePipeline(pipeline=summarizer_pipeline)
 
@@ -19,7 +21,8 @@ prompt_template = PromptTemplate.from_template(
     "Summarize the following research paper text in detail:\n\n{text}"
 )
 
-chain = LLMChain(llm=llm, prompt=prompt_template)
+# chain = LLMChain(llm=llm, prompt=prompt_template)
+chain = prompt_template | llm
 
 def chunk_text(text, max_tokens=800):
     """Split text into smaller chunks without cutting mid-sentence."""
@@ -45,7 +48,7 @@ def generate_summary(file):
     for chunk in chunks:
         # Ensure chunk is not too long for input
         chunk = chunk[:1000]
-        summary = chain.run({"text": chunk})
+        summary = chain.invoke({"text": chunk})
         all_summaries.append(summary)
 
     return "\n\n".join(all_summaries)

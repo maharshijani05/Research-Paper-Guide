@@ -14,11 +14,12 @@ with tab1:
 
     uploaded_file = st.file_uploader("Upload PDF", type=["pdf"])
     if uploaded_file is not None:
-        with st.spinner("Reading and summarizing..."):
-            summary = generate_summary(uploaded_file)
-            st.success("Summary generated!")
-            st.subheader("🧠 Detailed Summary")
-            st.write(summary)
-
+        if st.button("Summarize"):
+            with st.spinner("Reading and summarizing..."):
+                summary = generate_summary(uploaded_file)
+                st.success("Summary generated!")
+                st.subheader("🧠 Detailed Summary")
+                st.write(summary)
+        
 with tab2:
     chatbot.chatbot_app()

@@ -1,6 +1,14 @@
 streamlit
 langchain
-pypdf
+PyPDF2
 huggingface_hub
 transformers
 sentence-transformers
+ChatGroq
+langchain-community
+langchain-groq
+langchain-huggingface
+langchain-text-splitters
+langchain-core
+python-dotenv
+faiss-cpu
