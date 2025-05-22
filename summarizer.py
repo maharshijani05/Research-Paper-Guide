@@ -11,7 +11,7 @@ def extract_text_from_pdf(file):
         text += page.extract_text() or ""
     return text
 
-summarizer_pipeline = pipeline("text2text-generation", model="google/flan-t5-base", max_length=1024,truncation=True)
+summarizer_pipeline = pipeline("text2text-generation", model="google/flan-t5-base", max_length=1024,truncation=True,early_stopping=True,no_repeat_ngram_size=3)
 
 llm = HuggingFacePipeline(pipeline=summarizer_pipeline)
 
