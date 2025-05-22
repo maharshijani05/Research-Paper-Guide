@@ -130,13 +130,14 @@ def chatbot_app():
         st.info("⬆️ Please upload a PDF to start.")
         return
 
+    # Show chat input at top
+    user_input = st.chat_input("Ask something about the paper...")
+
     # Display previous chat messages
     for msg in st.session_state["messages"]:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-    # Show chat input at bottom
-    user_input = st.chat_input("Ask something about the paper...")
     if user_input:
         # Save and display user input
         st.session_state.messages.append({"role": "user", "content": user_input})
